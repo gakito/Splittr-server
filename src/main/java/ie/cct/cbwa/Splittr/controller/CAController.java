@@ -25,63 +25,68 @@ import io.jsonwebtoken.Claims;
 public class CAController {
 
 	private userList list = new userList();
-	private Map<String,ArrayList<Expense>> trips;
+	private Map<String, ArrayList<Expense>> trips;
 	public String username;
-	
+	private String token;
+
 	public CAController() {
 		trips = new HashMap<>();
 	}
-	
 
-	//Error 401 for auth error
-	//from https://www.baeldung.com/spring-mvc-controller-custom-http-status-code
+	// Error 401 for auth error
+	// from https://www.baeldung.com/spring-mvc-controller-custom-http-status-code
 	@RequestMapping(value = "/exception", method = RequestMethod.GET)
 	@ResponseBody
 	public ResponseEntity sendViaException() {
-	    throw new UnauthorizedException();
+		throw new UnauthorizedException();
 	}
-	
+
 	@GetMapping("/login")
-	public String login(
-			@RequestParam(name = "username", required = true) String username,
+	public String login(@RequestParam(name = "username", required = true) String username,
 			@RequestParam(name = "password", required = true) String password) {
-		
-		this.username=username;
-		System.out.println(username);
-		
-		if (list.getUsers().get(username.toLowerCase())!= null && list.getUsers().get(username.toLowerCase()).contentEquals(password)) {
-			return JWTIssuer.createJWT(username, "splittr", username, 86400000);
-		}else{
+
+		if (list.getUsers().get(username.toLowerCase()) != null
+				&& list.getUsers().get(username.toLowerCase()).contentEquals(password)) {
+			this.username = username;
+			this.token = JWTIssuer.createJWT(username, "splittr", username, 86400000);
+			return token;
+		} else {
 			sendViaException();
 			return "Invalid username or password";
 		}
 	}
 
 	@PostMapping("/{trip}/expense") // Authorization: Bearer <token>
-	public Map<String, ArrayList<Expense>> addExpense(
-			@PathVariable("trip") String trip,
-			@RequestHeader(name = "Authorization", required = true) String token,
+	public Map<String, ArrayList<Expense>> addExpense(@PathVariable("trip") String trip,
+			@RequestHeader(name = "Authorization", required = true) String token, // how to get insertion from users
 			@RequestBody(required = true) Expense expense) {
 
 		// TODO return 401 instead of 500.
 		Claims claims = JWTIssuer.decodeJWT(token.split(" ")[1]);
-		//String subClaim = claims.get("sub", String.class);
-		/*
-		 * if (!username.contentEquals(subClaim)) { sendViaException(); }
-		 */
+		String subClaim = claims.get("sub", String.class);
+		if (!username.contentEquals(subClaim)) {
+			sendViaException();
+		}
 
-		if(trips.get(trip) == null) {
+		if (trips.get(trip) == null) {
 			trips.put(trip, new ArrayList<Expense>());
 		}
-		
+
 		trips.get(trip).add(expense);
-		
+
 		return trips;
 	}
 
 	@GetMapping("/{trip}")
-	public String getTrip(@PathVariable("trip") String trip) {
-		return "";
+	public ArrayList<Expense> getTrip(@PathVariable(name = "trip", required = true) String trip,
+			@RequestBody(required = false) String label) {
+
+		if (label != null && trips.get(trip).get(2).equals(label)) {
+			return trips.get(trip);
+		} else {
+			return trips.get(trip);
+		}
+
 	}
 
 	@PostMapping("/{trip}/close")
