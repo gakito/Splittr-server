@@ -1,11 +1,16 @@
 package ie.cct.cbwa.Splittr.controller;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,7 +32,8 @@ public class CAController {
 	private userList list = new userList();
 	private Map<String, ArrayList<Expense>> trips;
 	public String username;
-	private String token;
+	public String token;
+	public String[] closedTrip;
 
 	public CAController() {
 		trips = new HashMap<>();
@@ -41,10 +47,22 @@ public class CAController {
 		throw new UnauthorizedException();
 	}
 
+	
+	  @ModelAttribute public void setResponseHeader(HttpServletResponse response) {
+	  response.setHeader("Access-Control-Allow-Origin", "*"); }
+	 
+
+	@RequestMapping(value = "test")
+	public String test() {
+		return "SUCCESS";
+	}
+
+	//@CrossOrigin(origins = "*")
 	@GetMapping("/login")
 	public String login(@RequestParam(name = "username", required = true) String username,
 			@RequestParam(name = "password", required = true) String password) {
 
+		// checking if user and password are valid
 		if (list.getUsers().get(username.toLowerCase()) != null
 				&& list.getUsers().get(username.toLowerCase()).contentEquals(password)) {
 			this.username = username;
@@ -78,20 +96,15 @@ public class CAController {
 	}
 
 	@GetMapping("/{trip}")
-	public ArrayList<Expense> getTrip(@PathVariable(name = "trip", required = true) String trip,
-			@RequestBody(required = false) String label) {
+	public ArrayList<Expense> getTrip(@PathVariable(name = "trip", required = true) String trip) {
 
-		if (label != null && trips.get(trip).get(2).equals(label)) {
-			return trips.get(trip);
-		} else {
-			return trips.get(trip);
-		}
-
+		return trips.get(trip);
 	}
 
 	@PostMapping("/{trip}/close")
-	public String closeTrip(@PathVariable("trip") String trip) {
-		return "";
+	public void closeTrip(@PathVariable("trip") String trip) {
+		closedTrip = (String[]) trips.get(trip).toArray();
+		return;
 	}
 
 	@GetMapping("/{trip}/summary")
