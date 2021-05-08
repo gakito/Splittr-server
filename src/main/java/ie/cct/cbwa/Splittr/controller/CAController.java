@@ -47,17 +47,17 @@ public class CAController {
 		throw new UnauthorizedException();
 	}
 
-	
-	  @ModelAttribute public void setResponseHeader(HttpServletResponse response) {
-	  response.setHeader("Access-Control-Allow-Origin", "*"); }
-	 
+	@ModelAttribute
+	public void setResponseHeader(HttpServletResponse response) {
+		response.setHeader("Access-Control-Allow-Origin", "*");
+	}
 
 	@RequestMapping(value = "test")
 	public String test() {
 		return "SUCCESS";
 	}
 
-	//@CrossOrigin(origins = "*")
+	// @CrossOrigin(origins = "*")
 	@GetMapping("/login")
 	public String login(@RequestParam(name = "username", required = true) String username,
 			@RequestParam(name = "password", required = true) String password) {
@@ -74,6 +74,7 @@ public class CAController {
 		}
 	}
 
+	@CrossOrigin(origins="*")
 	@PostMapping("/{trip}/expense") // Authorization: Bearer <token>
 	public Map<String, ArrayList<Expense>> addExpense(@PathVariable("trip") String trip,
 			@RequestHeader(name = "Authorization", required = true) String token, // how to get insertion from users
