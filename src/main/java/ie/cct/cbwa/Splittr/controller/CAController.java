@@ -96,9 +96,9 @@ public class CAController {
 		return trips;
 	}
 
+	@CrossOrigin(origins="*")
 	@GetMapping("/{trip}")
 	public ArrayList<Expense> getTrip(@PathVariable(name = "trip", required = true) String trip) {
-
 		return trips.get(trip);
 	}
 
