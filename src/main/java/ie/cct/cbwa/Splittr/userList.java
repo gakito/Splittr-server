@@ -9,8 +9,8 @@ public class userList {
 	public userList() {
 		this.users = new HashMap<>();
 		users.put("amilcar", "yoda");
-		users.put("david", "DevistheBest");
-		users.put("greg", "p4ssw0rd");
+		users.put("david", "matrix");
+		users.put("greg", "password");
 	}
 
 	

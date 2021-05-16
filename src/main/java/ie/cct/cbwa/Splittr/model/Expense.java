@@ -16,7 +16,7 @@ public class Expense {
 		this.amount = amout;
 		this.label = label;
 	}
-	
+
 	public String getName() {
 		return name;
 	}

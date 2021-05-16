@@ -31,12 +31,14 @@ public class CAController {
 
 	private userList list = new userList();
 	private Map<String, ArrayList<Expense>> trips;
+	public boolean active;
+	private Map<String, Boolean> checkTrip;
 	public String username;
 	public String token;
-	public String[] closedTrip;
 
 	public CAController() {
 		trips = new HashMap<>();
+		checkTrip = new HashMap<>();
 	}
 
 	// Error 401 for auth error
@@ -74,7 +76,7 @@ public class CAController {
 		}
 	}
 
-	@CrossOrigin(origins="*")
+	@CrossOrigin(origins = "*")
 	@PostMapping("/{trip}/expense") // Authorization: Bearer <token>
 	public Map<String, ArrayList<Expense>> addExpense(@PathVariable("trip") String trip,
 			@RequestHeader(name = "Authorization", required = true) String token, // how to get insertion from users
@@ -89,28 +91,61 @@ public class CAController {
 
 		if (trips.get(trip) == null) {
 			trips.put(trip, new ArrayList<Expense>());
+			checkTrip.put(trip, true);
 		}
 
-		trips.get(trip).add(expense);
+		if (checkTrip.get(trip)) {
+			trips.get(trip).add(expense);
+			return trips;
+		} else {
+			return null;
+		}
 
-		return trips;
 	}
 
-	@CrossOrigin(origins="*")
+	@CrossOrigin(origins = "*")
 	@GetMapping("/{trip}")
 	public ArrayList<Expense> getTrip(@PathVariable(name = "trip", required = true) String trip) {
 		return trips.get(trip);
 	}
 
 	@PostMapping("/{trip}/close")
-	public void closeTrip(@PathVariable("trip") String trip) {
-		closedTrip = (String[]) trips.get(trip).toArray();
-		return;
+	public boolean closeTrip(@PathVariable("trip") String trip) {
+
+		if (checkTrip.containsKey(trip)) {
+			checkTrip.put(trip, false);
+			return true;
+		} else {
+			return false;
+		}
 	}
 
+	@CrossOrigin(origins = "*")
 	@GetMapping("/{trip}/summary")
-	public String getSummary() {
-		return "";
-	}
+	public Map<String, Integer> getSummary(@PathVariable("trip") String trip) {
 
+		Map<String, Integer> splitCheck = new HashMap<String, Integer>();
+
+		for (int i = 0; i < trips.get(trip).size(); i++) {
+
+			if (!splitCheck.containsKey(trips.get(trip).get(i).getName())) {
+				splitCheck.put(trips.get(trip).get(i).getName(), 0);
+			}
+
+			String currentName = trips.get(trip).get(i).getName();
+			int temp = splitCheck.get(trips.get(trip).get(i).getName());
+			int valueToAdd = trips.get(trip).get(i).getAmount();
+			int updatedAmount = temp + valueToAdd;
+			
+			System.out.println(trips.get(trip).get(i).getName());
+			System.out.println(trips.get(trip).get(i).getAmount());
+
+			splitCheck.put(currentName, updatedAmount);
+			
+		}
+		
+		System.out.println(splitCheck);
+		
+		return splitCheck;
+	}
 }
