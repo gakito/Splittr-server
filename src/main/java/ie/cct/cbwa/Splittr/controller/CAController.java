@@ -109,6 +109,7 @@ public class CAController {
 		return trips.get(trip);
 	}
 
+	@CrossOrigin(origins = "*")
 	@PostMapping("/{trip}/close")
 	public boolean closeTrip(@PathVariable("trip") String trip) {
 
