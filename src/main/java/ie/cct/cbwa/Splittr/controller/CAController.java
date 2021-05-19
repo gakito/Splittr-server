@@ -94,7 +94,8 @@ public class CAController {
 			checkTrip.put(trip, true);
 		}
 
-		if (checkTrip.get(trip)) {
+		System.out.println("Trip status: " + checkTrip.get(trip));
+		if (checkTrip.get(trip)==true) {
 			trips.get(trip).add(expense);
 			return trips;
 		} else {
@@ -137,10 +138,7 @@ public class CAController {
 			int temp = splitCheck.get(trips.get(trip).get(i).getName());
 			int valueToAdd = trips.get(trip).get(i).getAmount();
 			int updatedAmount = temp + valueToAdd;
-			
-			System.out.println(trips.get(trip).get(i).getName());
-			System.out.println(trips.get(trip).get(i).getAmount());
-
+	
 			splitCheck.put(currentName, updatedAmount);
 			
 		}
