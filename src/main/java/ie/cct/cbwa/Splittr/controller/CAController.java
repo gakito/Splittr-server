@@ -27,8 +27,14 @@ import io.jsonwebtoken.Claims;
 
 @RestController
 public class CAController {
+	
 	/**
-	 * 
+	 * @param userList - a list containing the users hard coded
+	 * @param trips - a hashmap to store a trip as a key and all its expenses as values
+	 * @param active - boolean to allow or not an expense to be added on a trip
+	 * @param checkTrip - a hashmap to give each trip an active boolean
+	 * @param username - name inserted by the user
+	 * @param token - auth string to make a login valid 
 	 */
 
 	private userList list = new userList();
@@ -37,7 +43,7 @@ public class CAController {
 	private Map<String, Boolean> checkTrip;
 	public String username;
 	public String token;
-
+	
 	public CAController() {
 		trips = new HashMap<>();
 		checkTrip = new HashMap<>();
@@ -51,17 +57,18 @@ public class CAController {
 		throw new UnauthorizedException();
 	}
 
-	@ModelAttribute
-	public void setResponseHeader(HttpServletResponse response) {
-		response.setHeader("Access-Control-Allow-Origin", "*");
-	}
+//	@ModelAttribute
+//	public void setResponseHeader(HttpServletResponse response) {
+//		response.setHeader("Access-Control-Allow-Origin", "*");
+//	}
 
 	@RequestMapping(value = "test")
 	public String test() {
 		return "SUCCESS";
 	}
 
-	// @CrossOrigin(origins = "*")
+	
+	@CrossOrigin(origins = "http://localhost:19006") //this allows a mapping from this specific origin.
 	@GetMapping("/login")
 	public String login(@RequestParam(name = "username", required = true) String username,
 			@RequestParam(name = "password", required = true) String password) {
@@ -78,7 +85,7 @@ public class CAController {
 		}
 	}
 
-	@CrossOrigin(origins = "*")
+	@CrossOrigin(origins = "http://localhost:19006")
 	@PostMapping("/{trip}/expense") // Authorization: Bearer <token>
 	public Map<String, ArrayList<Expense>> addExpense(@PathVariable("trip") String trip,
 			@RequestHeader(name = "Authorization", required = true) String token, // how to get insertion from users
@@ -106,13 +113,13 @@ public class CAController {
 
 	}
 
-	@CrossOrigin(origins = "*")
+	@CrossOrigin(origins = "http://localhost:19006")
 	@GetMapping("/{trip}")
 	public ArrayList<Expense> getTrip(@PathVariable(name = "trip", required = true) String trip) {
 		return trips.get(trip);
 	}
 
-	@CrossOrigin(origins = "*")
+	@CrossOrigin(origins = "http://localhost:19006")
 	@PostMapping("/{trip}/close")
 	public boolean closeTrip(@PathVariable("trip") String trip) {
 
@@ -124,7 +131,7 @@ public class CAController {
 		}
 	}
 
-	@CrossOrigin(origins = "*")
+	@CrossOrigin(origins = "http://localhost:19006")
 	@GetMapping("/{trip}/summary")
 	public Map<String, Integer> getSummary(@PathVariable("trip") String trip) {
 
