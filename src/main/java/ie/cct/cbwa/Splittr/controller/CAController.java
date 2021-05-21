@@ -1,6 +1,7 @@
 package ie.cct.cbwa.Splittr.controller;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,7 +44,25 @@ public class CAController {
 	private Map<String, Boolean> checkTrip;
 	public String username;
 	public String token;
+
+	/**
+	 * specifics to detail method
+	 * @param labelMax - label for the highest expense
+	 * @param labelMin - label for the lowest expense
+	 * @param userMax - user that made the highest expense
+	 * @param userMin - user that made the lowest expense
+	 * @param maxString - the highest expense as string
+	 * @param minString - the lowest expense as string 
+	*/
 	
+	
+	String labelMax;
+	String labelMin;
+	String userMax;
+	String userMin;
+	String maxString;
+	String minString;
+
 	public CAController() {
 		trips = new HashMap<>();
 		checkTrip = new HashMap<>();
@@ -147,6 +166,7 @@ public class CAController {
 			int temp = splitCheck.get(trips.get(trip).get(i).getName());
 			int valueToAdd = trips.get(trip).get(i).getAmount();
 			int updatedAmount = temp + valueToAdd;
+			
 	
 			splitCheck.put(currentName, updatedAmount);
 			
@@ -156,4 +176,60 @@ public class CAController {
 		
 		return splitCheck;
 	}
+	
+	@CrossOrigin(origins = "http://localhost:19006")
+	@GetMapping("/{trip}/details")
+	public Map<String, ArrayList<String>> getDetails(@PathVariable("trip") String trip){
+		
+		//setting variables to search for highest and lowest expense
+		int max = 0;
+		int min = 0;
+		
+		Map<String, ArrayList<String>> tripDetails = new HashMap<String, ArrayList<String>>();
+		
+		for (int i = 0; i < trips.get(trip).size(); i++) {
+			
+			if (trips.get(trip).get(i).getAmount()>max) {
+				System.out.println(trips.get(trip).get(i).getAmount());
+				max=trips.get(trip).get(i).getAmount();
+				maxString=trips.get(trip).get(i).getAmount().toString();
+				labelMax=trips.get(trip).get(i).getLabel();
+				userMax=trips.get(trip).get(i).getName();
+			}else {
+				
+			}
+			System.out.println(i+": " + maxString);
+			
+			if(trips.get(trip).get(i).getAmount()<min||min==0) {
+				min=trips.get(trip).get(i).getAmount();
+				minString=trips.get(trip).get(i).getAmount().toString();
+				labelMin=trips.get(trip).get(i).getLabel();
+				userMin=trips.get(trip).get(i).getName();
+			}else {
+				
+			}
+			System.out.println(i+": " + minString);
+		}
+		
+		ArrayList<String> maxList = new ArrayList<>();
+		maxList.add(userMax);
+		maxList.add(maxString);
+		maxList.add(labelMax);
+		
+		ArrayList<String> minList = new ArrayList<>();
+		minList.add(userMin);
+		minList.add(minString);
+		minList.add(labelMin);
+		
+		ArrayList<String> purchaseNumber = new ArrayList<>();
+
+		tripDetails.put("max", maxList);
+		tripDetails.put("min", minList);
+		
+		return tripDetails;
+		
+	}
+	
+	
+	
 }
