@@ -1,6 +1,5 @@
 package ie.cct.cbwa.Splittr.controller;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +27,9 @@ import io.jsonwebtoken.Claims;
 
 @RestController
 public class CAController {
+	/**
+	 * 
+	 */
 
 	private userList list = new userList();
 	private Map<String, ArrayList<Expense>> trips;
