@@ -6,11 +6,13 @@ public class userList {
 
 	HashMap<String, String> users;
 
+	//hard coded users list
 	public userList() {
 		this.users = new HashMap<>();
 		users.put("amilcar", "yoda");
 		users.put("david", "matrix");
 		users.put("greg", "password");
+		users.put("admin", "admin");
 	}
 
 	

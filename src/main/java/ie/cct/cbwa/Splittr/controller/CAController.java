@@ -1,16 +1,12 @@
 package ie.cct.cbwa.Splittr.controller;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -75,31 +71,22 @@ public class CAController {
 	public ResponseEntity sendViaException() {
 		throw new UnauthorizedException();
 	}
-
-//	@ModelAttribute
-//	public void setResponseHeader(HttpServletResponse response) {
-//		response.setHeader("Access-Control-Allow-Origin", "*");
-//	}
-
-	@RequestMapping(value = "test")
-	public String test() {
-		return "SUCCESS";
-	}
-
 	
+	//method to log in. 
 	@CrossOrigin(origins = "http://localhost:19006") //this allows a mapping from this specific origin.
 	@GetMapping("/login")
 	public String login(@RequestParam(name = "username", required = true) String username,
 			@RequestParam(name = "password", required = true) String password) {
 
-		// checking if user and password are valid
+		//checking if user and password are valid. 
+		//compares the username and password hard coded and returns a token		
 		if (list.getUsers().get(username.toLowerCase()) != null
 				&& list.getUsers().get(username.toLowerCase()).contentEquals(password)) {
 			this.username = username;
 			this.token = JWTIssuer.createJWT(username, "splittr", username, 86400000);
 			return token;
 		} else {
-			sendViaException();
+			sendViaException();  //returns a 401 error if not valid login
 			return "Invalid username or password";
 		}
 	}
@@ -110,19 +97,20 @@ public class CAController {
 			@RequestHeader(name = "Authorization", required = true) String token, // how to get insertion from users
 			@RequestBody(required = true) Expense expense) {
 
-		// TODO return 401 instead of 500.
+		//to add expense checks if the user has a valid token. returns a 401 error if doesn't
 		Claims claims = JWTIssuer.decodeJWT(token.split(" ")[1]);
 		String subClaim = claims.get("sub", String.class);
 		if (!username.contentEquals(subClaim)) {
 			sendViaException();
 		}
 
+		//creates an arraylist for the trip if it doesn't exist already
 		if (trips.get(trip) == null) {
 			trips.put(trip, new ArrayList<Expense>());
 			checkTrip.put(trip, true);
 		}
 
-		System.out.println("Trip status: " + checkTrip.get(trip));
+		//checking if the trip is active. if it is, an expense can be added. if not, returns null
 		if (checkTrip.get(trip)==true) {
 			trips.get(trip).add(expense);
 			return trips;
@@ -132,16 +120,20 @@ public class CAController {
 
 	}
 
+	//method to list all expenses from a trip
 	@CrossOrigin(origins = "http://localhost:19006")
 	@GetMapping("/{trip}")
 	public ArrayList<Expense> getTrip(@PathVariable(name = "trip", required = true) String trip) {
 		return trips.get(trip);
 	}
 
+	//method to close a trip so more expenses can not be added.  
 	@CrossOrigin(origins = "http://localhost:19006")
 	@PostMapping("/{trip}/close")
 	public boolean closeTrip(@PathVariable("trip") String trip) {
 
+		//this if checks if the trip name exists. if it does, change "active" value to close the trip. 
+		//if not, return false for closing a trip. 
 		if (checkTrip.containsKey(trip)) {
 			checkTrip.put(trip, false);
 			return true;
@@ -150,33 +142,44 @@ public class CAController {
 		}
 	}
 
+	//gets summary from the trip at any time. 
+	//returns a map that shows how much each user spent.
 	@CrossOrigin(origins = "http://localhost:19006")
 	@GetMapping("/{trip}/summary")
 	public Map<String, Integer> getSummary(@PathVariable("trip") String trip) {
 
+		//map relating users (keys) to their spending(values)
 		Map<String, Integer> splitCheck = new HashMap<String, Integer>();
 
+		//a linear search for each element of the expense list
 		for (int i = 0; i < trips.get(trip).size(); i++) {
 
+			//this if checks if the splitCheck map contain a key that will receive the value at this loop
 			if (!splitCheck.containsKey(trips.get(trip).get(i).getName())) {
 				splitCheck.put(trips.get(trip).get(i).getName(), 0);
 			}
 
+			//temporary string to store username for the current loop
 			String currentName = trips.get(trip).get(i).getName();
+			
+			//temporary integer to store the current expense for this user
 			int temp = splitCheck.get(trips.get(trip).get(i).getName());
+			
+			//gets the amount that should be added to that user's expense
 			int valueToAdd = trips.get(trip).get(i).getAmount();
+			
+			//update the expense for this user
 			int updatedAmount = temp + valueToAdd;
 			
-	
+			//update the value for this key on the map
 			splitCheck.put(currentName, updatedAmount);
 			
 		}
 		
-		System.out.println(splitCheck);
-		
 		return splitCheck;
 	}
 	
+	//returns a map with information about the highest and lowest expenses
 	@CrossOrigin(origins = "http://localhost:19006")
 	@GetMapping("/{trip}/details")
 	public Map<String, ArrayList<String>> getDetails(@PathVariable("trip") String trip){
@@ -185,8 +188,10 @@ public class CAController {
 		int max = 0;
 		int min = 0;
 		
+		//map that will have two keys (max and min) and their values will be an arrayList of expenses 
 		Map<String, ArrayList<String>> tripDetails = new HashMap<String, ArrayList<String>>();
 		
+		//linear search through all expenses
 		for (int i = 0; i < trips.get(trip).size(); i++) {
 			
 			if (trips.get(trip).get(i).getAmount()>max) {
@@ -195,34 +200,30 @@ public class CAController {
 				maxString=trips.get(trip).get(i).getAmount().toString();
 				labelMax=trips.get(trip).get(i).getLabel();
 				userMax=trips.get(trip).get(i).getName();
-			}else {
-				
 			}
-			System.out.println(i+": " + maxString);
-			
-			if(trips.get(trip).get(i).getAmount()<min||min==0) {
+			//an else if is used because doesn't make sense to check if a maximum is a minimum
+			//however, if the trip has only one expense, there won't be a minimum
+			else if(trips.get(trip).get(i).getAmount()<min||min==0) {
 				min=trips.get(trip).get(i).getAmount();
 				minString=trips.get(trip).get(i).getAmount().toString();
 				labelMin=trips.get(trip).get(i).getLabel();
 				userMin=trips.get(trip).get(i).getName();
-			}else {
-				
 			}
-			System.out.println(i+": " + minString);
 		}
 		
+		//setting maxList values
 		ArrayList<String> maxList = new ArrayList<>();
 		maxList.add(userMax);
 		maxList.add(maxString);
 		maxList.add(labelMax);
 		
+		//setting minList values
 		ArrayList<String> minList = new ArrayList<>();
 		minList.add(userMin);
 		minList.add(minString);
 		minList.add(labelMin);
-		
-		ArrayList<String> purchaseNumber = new ArrayList<>();
 
+		//setting tripDetails map values
 		tripDetails.put("max", maxList);
 		tripDetails.put("min", minList);
 		

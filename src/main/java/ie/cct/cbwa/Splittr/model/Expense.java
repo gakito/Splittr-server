@@ -1,7 +1,11 @@
 package ie.cct.cbwa.Splittr.model;
 
 public class Expense {
-	
+	/**
+	 * @param name - name of the user who is entering the expense
+	 * @param amount - how much is this expense 
+	 * @param label - description of this expense
+	 */
 	private String name;
 	private Integer amount;
 	private String label;
